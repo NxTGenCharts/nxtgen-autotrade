@@ -272,13 +272,35 @@ docker compose up --build
 ```
 Note: the image runs with **1** gunicorn worker on purpose — the bot engine
 is an in-process thread in Phase 1, and a second worker would tick every bot
-twice. See "Scaling beyond Phase 1".
+twice. See "Scaling beyond Phase 1". `docker-compose.yml` mounts a named
+volume at `/app/data` and sets `NXTGEN_DB_PATH` to write the SQLite file
+there, so `docker compose down && docker compose up` keeps your data.
+
+### Deploying it at a real URL (no command line)
+Push the project to a GitHub repo (drag-and-drop upload works fine, no
+`git` needed), then use a dashboard-only host like Render or Railway:
+connect the repo, it auto-detects the `Dockerfile`, and you get a live
+HTTPS URL in a couple minutes. Point a subdomain's CNAME at it from your
+registrar's DNS dashboard to serve it from your own domain
+(e.g. `autotrade.yourdomain.com`).
+
+**Persistence matters here:** on a free/ephemeral instance the container's
+disk is wiped on every restart or redeploy, which means every registered
+user and every bot resets. Set `NXTGEN_DB_PATH` to a path on a **persistent
+disk** the host gives you (Render's paid tiers offer one under
+Settings → Disks, mounted at e.g. `/data`) — set
+`NXTGEN_DB_PATH=/data/nxtgen.db` in that service's environment variables and
+the app will create the file there automatically on first boot; nothing
+else to configure.
 
 ### First admin user
 No user is admin by default. Promote one manually once you have a user id:
 ```bash
 python3 -c "from models import get_db, init_db; init_db(); db=get_db(); db.execute(\"UPDATE users SET role='admin' WHERE email=?\", ('you@example.com',)); db.commit()"
 ```
+(On a hosted platform with no shell access, run this once via the host's
+one-off "Shell"/"Console" dashboard button if it has one — e.g. Render's
+service page has a **Shell** tab — rather than needing your own terminal.)
 
 ---
 

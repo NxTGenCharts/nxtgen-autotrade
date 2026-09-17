@@ -7,7 +7,10 @@ import sqlite3
 import os
 import threading
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "nxtgen.db")
+DB_PATH = os.environ.get("NXTGEN_DB_PATH") or os.path.join(os.path.dirname(__file__), "nxtgen.db")
+_db_dir = os.path.dirname(DB_PATH)
+if _db_dir:
+    os.makedirs(_db_dir, exist_ok=True)
 
 _local = threading.local()
 

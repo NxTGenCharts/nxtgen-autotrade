@@ -6,6 +6,8 @@ services:
       - "8090:8090"
     env_file:
       - .env
+    environment:
+      - NXTGEN_DB_PATH=/app/data/nxtgen.db
     volumes:
       - nxtgen_data:/app/data
     restart: unless-stopped
